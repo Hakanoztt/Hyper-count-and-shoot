@@ -1,0 +1,10 @@
+{
+    "apiRoot": "https://build-api.cloud.unity3d.com/api/v1",
+    "apiKey": "c076391976c79c0a6ba8f3a7d4a8a22b",
+    "organizationId": "18966672297045",
+    "iosCredentialId": "23a9f467-55dd-4ecf-b864-be4d7f55ab5a",
+    "androidCredentialId": "6e05cf88-0bd9-4d21-9f4f-e5e1a6d70edf",
+    "gitUrl": "git@github.com:MobgeGames/hyper-count-and-shoot-intern.git",
+    "projectName": "Hyper Count And Shoot Intern",
+    "bundleId": "com.HookGames.CountAndShootIntern"
+}

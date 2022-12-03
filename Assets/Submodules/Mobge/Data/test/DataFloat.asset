@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be190a176af8f94a83988b0a91c8fe6, type: 3}
+  m_Name: DataFloat
+  m_EditorClassIdentifier: 
+  map:
+    _elements:
+    - label: 1
+      value: 1
+    - label: 555
+      value: 2
+    - label: helllo
+      value: 4
+    - label: ov yea
+      value: 5
+    _existences: 01010101
+    _nextIndex: 4
+    _count: 4

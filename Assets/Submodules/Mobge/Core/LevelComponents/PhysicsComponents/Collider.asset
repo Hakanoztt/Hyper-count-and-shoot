@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa5fc5c0b885e414d87bcc82b7898eef, type: 3}
+  m_Name: Collider
+  m_EditorClassIdentifier: 
+  icon: {fileID: 2800000, guid: 5c7a5e08c59483b45acefa53df98fcae, type: 3}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 0, y: 0, z: 0}
+    shape:
+      shape: 1
+      points:
+      - {x: 0, y: 0}
+      - {x: 2, y: 1}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+    _parent:
+      id: -1
+    _disabled: 0
+    isTrigger: 1
+    points: []
+    layer: 0
+    layerMask: -1
+    material: {fileID: 0}
+    mode: 0
+    activation: 0
+    _connections:
+      _connections: []

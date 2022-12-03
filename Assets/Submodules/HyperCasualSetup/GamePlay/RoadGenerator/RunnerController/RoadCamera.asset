@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abf3d98b511f8ee4fbb8a2dfeedfef35, type: 3}
+  m_Name: RoadCamera
+  m_EditorClassIdentifier: 
+  icon: {fileID: 0}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+    priority: 0
+    data:
+      moveForce: {x: 10, y: 10, z: 10}
+      angularMoveForce: 1
+      offset:
+        position: {x: 0, y: 0, z: 0}
+        rotation: {x: 0, y: 0, z: 0, w: 0}
+    connections:
+      _connections: []
+    activateOnStart: 0
+    sideMoveRate: 0.3
+    upMoveRate: 0.2

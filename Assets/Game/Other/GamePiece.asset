@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c2060af1b99d4bdd80dc9a68d388d32, type: 3}
+  m_Name: GamePiece
+  m_EditorClassIdentifier: 
+  editorGrid: {fileID: 0}
+  outputSlotProperties:
+  - name: character
+    type: 1
+    returnType: 1
+    outputSlot: 0
+  inputSlotProperties:
+  - name: character
+    type: 1
+    returnType: 1
+    outputSlot: 0
+  _components:
+    _elements:
+    - data:
+        data: 14020b636f6e6e656374696f6e7314010c5f636f6e6e656374696f6e730f02140305696e7075740300000000066f75747075740300000000067461726765741401026964030084d717140305696e7075740301000000066f75747075740301000000067461726765741401026964030084d71708706f736974696f6e14030178056662883f017905604240bf017a0512c32c41
+        targets: []
+      definition: {fileID: 11400000, guid: 3c703793702a6de4488a97245d394430, type: 2}
+    _existences: 01
+    _nextIndex: 1
+    _count: 1
+  _connections:
+    _connections: []

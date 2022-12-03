@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c7810f65a941344b92748792b7ccde, type: 3}
+  m_Name: HttpCommandSetups
+  m_EditorClassIdentifier: 
+  ip: 192.168.1.202
+  port: 4063
+  setups:
+  - name: follow finger
+    methods:
+    - methodName: set_touch_finger_rate
+      parameters:
+      - key: x
+        value: 1
+      - key: y
+        value: 1
+    - methodName: set_touch_finger_offset
+      parameters:
+      - key: x
+        value: 0
+      - key: y
+        value: 30
+    - methodName: set_touch_drag_relative
+      parameters:
+      - key: value
+        value: false
+  - name: sling shot
+    methods:
+    - methodName: set_touch_finger_rate
+      parameters:
+      - key: x
+        value: -1.5
+      - key: y
+        value: -1.5
+    - methodName: set_touch_finger_offset
+      parameters:
+      - key: x
+        value: 0
+      - key: y
+        value: 0
+    - methodName: set_touch_drag_relative
+      parameters:
+      - key: value
+        value: false
+  - name: drag from anywhere
+    methods:
+    - methodName: set_touch_finger_rate
+      parameters:
+      - key: x
+        value: 1
+      - key: y
+        value: 1
+    - methodName: set_touch_finger_offset
+      parameters:
+      - key: x
+        value: 0
+      - key: y
+        value: 0
+    - methodName: set_touch_drag_relative
+      parameters:
+      - key: value
+        value: true

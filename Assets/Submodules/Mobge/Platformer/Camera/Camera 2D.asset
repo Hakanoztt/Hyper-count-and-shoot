@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70c6847eab87f4a4599ea0758c5a5622, type: 3}
+  m_Name: Camera 2D
+  m_EditorClassIdentifier: 
+  icon: {fileID: 2800000, guid: 125851ad4d1db724085f6e01c7af0deb, type: 3}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 398.8182, y: -2.1746597, z: 0}
+    priority: 0
+    xMin: NaN
+    xMax: NaN
+    yMin: NaN
+    yMax: NaN
+    shape:
+      shape: 1
+      points:
+      - {x: -1.0358276, y: -5.7585287}
+      - {x: 17.607056, y: 7.6768875}
+    _startDisabled: 0
+    _parent:
+      id: -1
+    data:
+      maxZOffset: 25
+      snapGround: 0
+      snapBreakOffset: 0.7
+      maxHorizonralOffsetRate: 0
+      followForce: {x: 10, y: 10, z: 10}
+      zOffset: 16
+      movementRate: {x: 0.40784588, y: 0.85030633}
+      verticalOffset: 0.17
+      horizontalOffset: 0.08784771
+      verticalOffsetAir: 0.23078503

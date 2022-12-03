@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e355893aa7d631047ad52bec1e3a4a73, type: 3}
+  m_Name: Piece
+  m_EditorClassIdentifier: 
+  original: {fileID: 0}
+  icon: {fileID: 2800000, guid: 13a33ed0f495b47178f507f6a7399314, type: 3}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 0, y: 0, z: 0}
+    piece: {fileID: 0}
+    _connections:
+      _connections: []
+    rotation: {x: 0, y: 0, z: 0, w: 1}

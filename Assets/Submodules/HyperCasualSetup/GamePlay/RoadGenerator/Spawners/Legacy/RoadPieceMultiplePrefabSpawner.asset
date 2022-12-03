@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d8bd4ad8dcfc246b4570e1d981667d, type: 3}
+  m_Name: RoadPieceMultiplePrefabSpawner
+  m_EditorClassIdentifier: 
+  icon: {fileID: 2800000, guid: 74bab766bf0f91b4b8b8ce903781000e, type: 3}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
+    parentIndex: 0
+    roadGenerator:
+      id: -1
+    _connections:
+      _connections: []
+    objects: []
+    _rotation: {x: 0, y: 0, z: 0, w: 0}
+    _parent:
+      id: -1
+    prefabReferences: []
+    autoSpawn: 1
+    spawnModule:
+      spawnCooldown: 0
+    autoMovementOffsetTime: 1
+    movementTimesRelativeToTheFirst: 1
+    componentConnections: []

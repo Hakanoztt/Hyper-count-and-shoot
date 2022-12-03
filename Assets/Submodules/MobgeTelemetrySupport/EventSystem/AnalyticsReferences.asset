@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc0f30735036b204692a960d0f55128a, type: 3}
+  m_Name: AnalyticsReferences
+  m_EditorClassIdentifier: 
+  levelStarted:
+    name: level_started
+    analytics: {fileID: 11400000}
+  levelFailed:
+    name: level_failed
+    analytics: {fileID: 11400000}
+  levelCompleted:
+    name: level_completed
+    analytics: {fileID: 11400000}
+  InterstitialFirst:
+    name:
+      name: inter_first
+      analytics: {fileID: 11400000}
+    variable:
+      defaultValue: 120
+  InterstitialFrequency:
+    name:
+      name: inter_frequency
+      analytics: {fileID: 11400000}
+    variable:
+      defaultValue: 120
+  InterstitialCooldownAfterSuccessfulRewarded:
+    name:
+      name: inter_after_rw_cooldown
+      analytics: {fileID: 11400000}
+    variable:
+      defaultValue: 120
+  RateUsFirst:
+    name:
+      name: rate_us_first
+      analytics: {fileID: 11400000}
+    variable:
+      defaultValue: 300
+  RateUsFrequency:
+    name:
+      name: rate_us_frequency
+      analytics: {fileID: 11400000}
+    variable:
+      defaultValue: 300

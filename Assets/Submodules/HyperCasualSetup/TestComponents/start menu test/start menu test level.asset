@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb220e18efe6e2642b5afb0aa23cf56e, type: 3}
+  m_Name: start menu test level
+  m_EditorClassIdentifier: 
+  editorGrid: {fileID: 0}
+  outputSlotProperties: []
+  inputSlotProperties: []
+  _components:
+    _elements:
+    - data:
+        data: 14030b636f6e6e656374696f6e7314010c5f636f6e6e656374696f6e730f01140305696e7075740300000000066f7574707574030000000006746172676574140102696403010000000e73756273637269626544656c6179050000000008706f736974696f6e1403017805661b7840017905b4830cbe017a0520f595bf
+        targets: []
+      definition: {fileID: 11400000, guid: d691cbfc312c27a44a7062e29c54f198, type: 2}
+    - data:
+        data: 1403056c6162656c0a0730206669726564107573654c6162656c4173466f726d6174010008706f736974696f6e1403017805e62f903f017905324b14be017a05e0a3893e
+        targets: []
+      definition: {fileID: 11400000, guid: 64a1817e858643a4999139dee3b51d31, type: 2}
+    - data:
+        data: 14030b636f6e6e656374696f6e7314010c5f636f6e6e656374696f6e730f01140305696e7075740300000000066f7574707574030000000006746172676574140102696403030000000e73756273637269626544656c6179050000404008706f736974696f6e1403017805c08177400179055380a7bf017a056041a33e
+        targets: []
+      definition: {fileID: 11400000, guid: d691cbfc312c27a44a7062e29c54f198, type: 2}
+    - data:
+        data: 1403056c6162656c0a0733206669726564107573654c6162656c4173466f726d6174010008706f736974696f6e14030178051922923f017905c96aa7bf017a05702ee13f
+        targets: []
+      definition: {fileID: 11400000, guid: 64a1817e858643a4999139dee3b51d31, type: 2}
+    _existences: 01010101
+    _nextIndex: 4
+    _count: 4
+  _connections:
+    _connections: []
+  _gameSetup: {fileID: 0}
+  decorationSet:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+  tag: 0

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c72e26ef94a658a4cb113d0be0d9c807, type: 3}
+  m_Name: Camera 2D Shake
+  m_EditorClassIdentifier: 
+  original: {fileID: 0}
+  icon: {fileID: 0}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 125.960495, y: 30.55798, z: 0}
+    frequency: 5
+    amplitude: {x: 0, y: 0.2, z: 0}
+    rotationalAmplitude: {x: 0, y: 0, z: 0}
+    amplitudeOverTime:
+      _keys:
+      - time: 0
+        value: 1
+        inTangent: 0
+        outTangent: 0
+      - time: 1
+        value: 0
+        inTangent: 0
+        outTangent: 0
+    time: 1.3

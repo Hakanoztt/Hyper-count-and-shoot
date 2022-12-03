@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f41c8808b8403054dbf543be5279f88a, type: 3}
+  m_Name: Polygon
+  m_EditorClassIdentifier: 
+  icon: {fileID: 2800000, guid: 74bab766bf0f91b4b8b8ce903781000e, type: 3}
+  menuPriority: 5
+  _editorValue:
+    position: {x: 0, y: 0, z: 0.04}
+    _mode: 0
+    disableOnStart: 0
+    visualsIndex: 0
+    polygonVisualizer:
+      m_AssetGUID: 
+      m_SubObjectName: 
+    physicsMaterial: {fileID: 0}
+    collisionDetectionMode: 0
+    mass: 0
+    drag: 0
+    bodyConstrainst: 0
+    color: {r: 1, g: 1, b: 1, a: 1}
+    subdivisionCount: 1
+    layer: 0
+    parent:
+      id: -1
+    _rotation: {x: 0, y: 0, z: 0, w: 1}
+    polygons:
+    - corners:
+      - position: {x: -2, y: -2}
+      - position: {x: 2, y: -2}
+      - position: {x: 2, y: 2}
+      - position: {x: -2, y: 2}
+      noCollider: 0
+      skinScale: 1
+      openShape: 0
+      noFill: 0
+      color: {r: 1, g: 1, b: 1, a: 1}
+    cubicness: 0.3

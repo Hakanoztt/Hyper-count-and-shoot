@@ -1,0 +1,21 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+uniform RWStructuredBuffer<int> Particles;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float prog = id.x / (float)512;
+    Result[id.xy] = float4(prog, 1 - prog, 0, 1);
+    Result[id.xy] = Result[id.xy] - float4(563, 563, 0, 0);
+    Result[id.xy] = Result[id.xy] * float4(2, 2, 1, 1);
+    Result[id.xy] = Result[id.xy] + float4(563*2, 563*2, 0, 0);
+    Result[id.xy] = Result[id.xy] / float4(2, 2, 1, 1);
+
+    InterlockedCompareStore (Particles[id.x], -1, id.x+id.y);
+}

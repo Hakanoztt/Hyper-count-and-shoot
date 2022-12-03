@@ -1,0 +1,642 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel MoveParticles
+#pragma kernel ClearMaps
+#pragma kernel ClearBuffers
+#pragma kernel BitonicSortMerge
+#pragma kernel HashKeys
+#pragma kernel CalculateDensities
+#pragma kernel CalculateForces
+#pragma kernel CalculateForcesBasic
+#pragma kernel DrawWallsDebug
+#pragma kernel ApplyTransformatoinVelocity
+#pragma kernel DrawParticles
+
+
+
+// reference for algorithm: http://rlguy.com/sphfluidsim/
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> ColorMap;
+RWTexture2D<float4> MainTexture;
+
+
+struct Particle {
+    float2 position;
+    float3 color;
+    float2 velocity;
+    float2 force;
+    float3 nextColor;
+    float pressure;
+    float density;
+};
+
+struct Line {
+    float3 p1;
+    float3 p2;
+};
+
+struct KeyValuePair {
+    uint key, value;
+};
+
+#define c_linearBufferThreadCount 64
+
+const static uint c_free = 0xFFFFFFFF;
+const static float PI = 3.14159265f;
+
+uniform float c_pressureConstant;
+uniform float c_fluidReferenceDensity;
+uniform float c_viscosityConstant;
+uniform float c_wallCollisionEnergyLoss;
+uniform float c_safeWallRadius;
+uniform float c_colorExchangeConstant;
+uniform float c_maxForce;
+uniform float c_metaballAlphaCutoff;
+uniform float c_drag;
+
+
+uniform RWStructuredBuffer<Particle> Particles;
+uniform RWStructuredBuffer<KeyValuePair> HashMap;
+uniform int2 sortPass1, sortPass2;
+uniform RWStructuredBuffer<KeyValuePair> Sorted;
+uniform int c_wallCount;
+uniform StructuredBuffer<Line> Walls;
+uniform RWStructuredBuffer<int> Errors;
+
+
+
+
+uniform int particleCount;
+uniform int calculateCount;
+uniform float2 gravity;
+uniform float deltaTime;
+uniform float time;
+uniform float particleRadius;
+uniform float textureScale;
+
+uniform float4x4 transformation;
+uniform float2 debugTranslate;
+
+
+#define _SET(buffer,index,value) buffer[index]=value
+#define _GET(buffer,index) buffer[index]
+
+#define loopGridCell(positionKey, x) uint index = HashTableGet(positionKey);\
+                        if(index != c_free){do{\
+                            x\
+                            index++;\
+                        }while(index != particleCount && _GET(Sorted,min(index,particleCount-1)).value == positionKey);}
+/*
+#define boundaryCheck(buffer,index,code) {uint __count__,__stride__;\
+                        buffer.GetDimensions(__count__,__stride__);\
+                        if(__count__<=index){\
+                            uint __errorCount__,__errorStride__;\
+                            Errors.GetDimensions(__errorCount__,__errorStride__);\
+                            Errors[code%__errorCount__]=code;\
+                        }}
+
+
+inline Particle _GET(in RWStructuredBuffer<Particle> buffer, uint index){
+    boundaryCheck(buffer,index,15);
+    return buffer[index];
+}
+inline void _SET(in RWStructuredBuffer<Particle> buffer, uint index, in Particle value){
+    boundaryCheck(buffer,index,14);
+    buffer[index] = value;
+}
+inline KeyValuePair _GET(in RWStructuredBuffer<KeyValuePair> buffer, uint index, int code){
+    boundaryCheck(buffer,index,code);
+    return buffer[index];
+}
+inline KeyValuePair _GET(in RWStructuredBuffer<KeyValuePair> buffer, uint index){
+    boundaryCheck(buffer,index,27);
+    return buffer[index];
+}
+inline void _SET(in RWStructuredBuffer<KeyValuePair> buffer, uint index, in KeyValuePair value){
+    boundaryCheck(buffer,index,28);
+    buffer[index] = value;
+}
+*/
+float magnitude(float2 v) {
+    return sqrt(v.x*v.x + v.y*v.y);
+}
+
+float magnitudeSqr(float2 v) {
+    return v.x * v.x + v.y * v.y;
+}
+
+float LineIntersectionRate(float2 l1s, float2 l1e, float2 l2s, float2 l2e) {
+    float2 l2Dis = l2e - l2s;
+    float2 l1s_l2sDis = l1s - l2s;
+    float l1s_L2Rate = dot(l2Dis, l1s_l2sDis) / magnitudeSqr(l2Dis);
+    float2 pOnL2 = l2s + l2Dis * l1s_L2Rate;
+    float2 l2_L1s = pOnL2 - l1s;
+    float2 l1Dis = l1e - l1s;
+    // The following equation in comment is the correct solution. 
+    // The return statement is identical to that line only it is simplified.
+    // var result = l2_L1s.magnitude / (Vector2.Dot(l2_L1s, l1Dis) / l2_L1s.magnitude);
+    return magnitudeSqr(l2_L1s) / dot(l2_L1s, l1Dis);
+}
+
+float PointToLineProjection(float2 l1, float2 l2, float2 p) {
+    float2 ldis = l2 - l1;
+    float2 pdis = p - l1;
+    return dot(ldis, pdis) / magnitudeSqr(ldis);
+}
+
+float2 TextureToWorldSpace(int2 texturePos) {
+    uint width, height;
+    ColorMap.GetDimensions(width, height);
+    texturePos -= int2(width >> 1, height >> 1);
+
+    return (float2)texturePos * textureScale;
+}
+
+int2 ToTextureSpace(float2 pos) {
+    uint width, height;
+    ColorMap.GetDimensions(width, height);
+
+
+
+    int2 p = pos / textureScale;
+    p += int2(width >> 1, height >> 1);
+    return p;
+
+}
+
+int2 ToGridPos(float2 position) {
+    return floor(position / particleRadius);
+}
+uint ToHash(int2 gridPos) {
+    const uint p1 = 73856093; // some large primes
+    const uint p2 = 19349663;
+    int n = p1 * gridPos.x ^ p2 * gridPos.y;
+    return n;
+}
+
+void HashTableSet(uint key, uint value) {
+    //return;
+    uint numBuckets = calculateCount << 1;
+    uint slot = key % numBuckets;
+    while(true) {
+        uint prev;
+        //boundaryCheck(HashMap,slot,55);
+        InterlockedCompareExchange(HashMap[slot].key, c_free, key, prev);
+        if(prev == c_free || prev == key) {
+            HashMap[slot].value = value;  
+            break;
+		}
+        slot = (slot + 1) % numBuckets;   
+	}
+}
+uint HashTableGet(uint key) {
+    uint numBuckets = calculateCount << 1;
+    uint slot = key % numBuckets;
+    while(true) {
+        //boundaryCheck(HashMap,slot,52);
+        uint mapKey = HashMap[slot].key;
+        if (mapKey == key) {
+            return HashMap[slot].value;
+		}
+        if (mapKey == c_free) {
+            return c_free;  
+		}
+        slot = (slot + 1) % numBuckets;
+	}
+}
+
+
+[numthreads(8,8,1)]
+void ClearMaps(uint3 id : SV_DispatchThreadID) {
+    ColorMap[id.xy] = float4(0, 0, 0, 0);
+}
+[numthreads(c_linearBufferThreadCount,1,1)]
+void ClearBuffers(uint id : SV_DispatchThreadID) {
+    KeyValuePair p;
+    p.key = c_free;
+    p.value = c_free;
+
+    //boundaryCheck(HashMap,id.x << 1,53);
+    //boundaryCheck(HashMap,(id.x << 1) + 1,54);
+    //boundaryCheck(HashMap,id.x << 1 + 1,3454);
+    HashMap[id.x << 1] = p;
+    HashMap[(id.x << 1) + 1] = p;
+    _SET(Sorted,id.x,p);
+}
+
+
+
+
+
+void CalculateVectorForDraw(uint positionKey, float2 position, float sd2, inout float4 color, inout float count) {
+
+    //float2 f = float2(0,0);
+
+    
+    loopGridCell(positionKey,{
+        KeyValuePair sort = _GET(Sorted,index);
+        Particle other = _GET(Particles,sort.key);
+        float2 relativePos = other.position - position;
+
+        float r2 = magnitudeSqr(relativePos);
+        if(r2 < sd2) {
+            //f += other.velocity;
+            float rate = r2 / sd2;
+            rate = 1 - rate;
+            rate = rate*rate;
+            rate = rate*rate;
+            rate = rate*rate;
+            rate = rate*rate;
+            count += rate;
+            color.rgb += other.color.rgb * rate;
+            if(r2 > 0) {
+                color.a += sd2 / r2 - 1;
+            }
+            else {
+                color.a += 1000000;
+            }
+		}
+	})
+}
+
+[numthreads(8,8,1)]
+void DrawParticles(uint3 id : SV_DispatchThreadID) {
+    
+    float2 worldPos = TextureToWorldSpace(id.xy);
+    int2 gridPos = ToGridPos(worldPos);
+    //float2 moveVector = float2(0,0);
+    float sd2 = particleRadius * particleRadius;
+    float4 color = 0;
+    float count = 0;
+    CalculateVectorForDraw(ToHash(int2(gridPos.x - 1, gridPos.y - 1)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x - 1, gridPos.y + 0)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x - 1, gridPos.y + 1)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x + 0, gridPos.y - 1)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x + 0, gridPos.y + 0)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x + 0, gridPos.y + 1)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x + 1, gridPos.y - 1)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x + 1, gridPos.y + 0)), worldPos, sd2, color, count);
+    CalculateVectorForDraw(ToHash(int2(gridPos.x + 1, gridPos.y + 1)), worldPos, sd2, color, count);
+
+    color.rgb = color.rgb / count;
+
+    // alpha = (count * sd2) / alpha;
+    //float width, height;
+    //MainTexture.GetDimensions(width, height);
+
+    // float2 moveDir = normalize(moveVector);
+    // float2 normal = float2(-moveDir.y, moveDir.x);
+    // float deltax = dot(moveDir, worldPos) * 16;
+    // float deltay = dot(normal, worldPos) * 16;
+    // if(deltax < 0) deltax = -deltax;
+    // if(deltay < 0) deltay = -deltay;
+    //float f = sin(delta * 2);
+    //float4 color = MainTexture[uint2(deltax % width, deltay % height)];
+    //ColorMap[id.xy] = float4(0.4+f*0.3,0.7+f*0.3,1,magnitudeSqr(moveVector)/10);
+    ColorMap[id.xy] = ColorMap[id.xy] + float4(color.rgb, (color.a > c_metaballAlphaCutoff));
+
+}
+float2 CalculateDistanceSum(uint positionKey, float2 position, float sd2, inout float count) {
+    float2 distanceTotal = float2(0,0);
+    loopGridCell(positionKey,{
+             
+        KeyValuePair sort = _GET(Sorted,index);
+        Particle other = _GET(Particles,sort.key);
+        float2 relativePos = other.position - position;
+        float r2 = magnitudeSqr(relativePos);
+        if(r2 < sd2) {
+            distanceTotal += relativePos;
+            count++;
+        }
+    })
+    return distanceTotal;
+}
+
+[numthreads(8,8,1)]
+void DrawParticles1(uint3 id : SV_DispatchThreadID) {
+    float2 worldPos = TextureToWorldSpace(id.xy);
+    int2 gridPos = ToGridPos(worldPos);
+    float2 distanceSum = float2(0,0);
+    float sd2 = particleRadius * particleRadius;
+    float count = 0;
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x - 1, gridPos.y - 1)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x - 1, gridPos.y + 0)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x - 1, gridPos.y + 1)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x + 0, gridPos.y - 1)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x + 0, gridPos.y + 0)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x + 0, gridPos.y + 1)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x + 1, gridPos.y - 1)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x + 1, gridPos.y + 0)), worldPos, sd2, count);
+    distanceSum += CalculateDistanceSum(ToHash(int2(gridPos.x + 1, gridPos.y + 1)), worldPos, sd2, count);
+
+    distanceSum /= count * particleRadius;
+    ColorMap[id.xy] = float4(distanceSum, 1, (count -3) * .2);
+
+}
+
+[numthreads(c_linearBufferThreadCount,1,1)]
+void MoveParticles (uint3 id : SV_DispatchThreadID) {
+    if(id.x >= particleCount) {
+        return;
+	}
+    Particle p = _GET(Particles,id.x);
+    // update velocity and position
+     p.velocity *= c_drag;
+    p.velocity += deltaTime * (gravity + (p.force/* / p.mass */ ));
+    //p.velocity += deltaTime * gravity;
+    float2 nextPos = p.position + deltaTime * p.velocity;
+    
+
+    // handle movement
+    
+    for(int i = 0; i < c_wallCount; i++) {
+        Line wall = Walls[i];
+        float rate1 = LineIntersectionRate(wall.p1, wall.p2, p.position, nextPos);
+        if(rate1 >= 0 && rate1 <= 1) {
+            float2 intersection = wall.p1 + (wall.p2 - wall.p1) * rate1;
+            float rate2 = PointToLineProjection(p.position, nextPos, intersection);
+            if(rate2 >= 0 && rate2 <= 1) {
+                float2 wDir = wall.p2 - wall.p1;
+                float2 normal = normalize(float2(-wDir.y, wDir.x));
+                float dt = dot(normal, p.velocity);
+                p.velocity = -(2 - c_wallCollisionEnergyLoss) * dt * normal + p.velocity;
+                nextPos = intersection + c_safeWallRadius * normal;
+                // float2 passed = nextPos - intersection;
+                   
+                // float dotPassed = dot(normal, passed);
+                // nextPos -= normal * (dotPassed * 2);
+                // nextPos = p.position;
+                // p.velocity = normal * magnitude(gravity) * deltaTime * 2;
+			}
+		}
+	}
+    
+    p.position = nextPos;
+    
+    // pre sort 
+    KeyValuePair kp;
+    kp.key = id.x;
+    kp.value = ToHash(ToGridPos(nextPos));
+    _SET(Sorted,id.x,kp);
+
+
+    _SET(Particles,id.x,p);
+    
+    // ColorMap[ToTextureSpace(p.position)] = float4(p.pressure / 5000, sin(2 * time), sin(3 * time), 1);
+    // ColorMap[ToTextureSpace(p.position)] = float4(0,0,0,1);
+    // DrawParticle(p);
+
+}
+
+[numthreads(c_linearBufferThreadCount,1,1)]
+void BitonicSortMerge(uint3 id : SV_DispatchThreadID) {
+    uint count = calculateCount;
+
+    bool sign = (id.x / (sortPass1 << 1)) % 2 == 0; 
+    bool hasMove = id.x % (sortPass2 << 1) < sortPass2;
+    uint target = id.x + sortPass2;
+    if(hasMove /*&& target < count*/){
+        if((_GET(Sorted,id.x).value > _GET(Sorted, target).value) == sign) {
+            KeyValuePair temp = _GET(Sorted,target);
+            _SET(Sorted,target,_GET(Sorted,id.x));
+            _SET(Sorted,id.x,temp);
+		}
+	}
+}
+
+[numthreads(c_linearBufferThreadCount,1,1)]
+void HashKeys(uint3 id : SV_DispatchThreadID) {
+    if(id.x < particleCount) {
+        KeyValuePair pair = _GET(Sorted,id.x);
+        uint index = min(id.x-1,particleCount-1);
+        if(_GET(Sorted,index).value != pair.value) {
+            HashTableSet(ToHash(ToGridPos(_GET(Particles,pair.key).position)), id.x);
+	    } 
+    }
+}
+
+[numthreads(c_linearBufferThreadCount,1,1)]
+void ApplyTransformatoinVelocity(uint id: SV_DispatchThreadID) {
+    if(id.x < particleCount) {
+        Particle p = _GET(Particles,id.x);
+
+        float2 newPos = mul(transformation, float4(p.position.x,p.position.y, 0, 1)).xy;
+        p.velocity += (newPos - p.position) / deltaTime;
+        //p.velocity += -debugTranslate / deltaTime;
+
+        _SET(Particles,id.x,p);
+     }
+}
+
+
+static float _smoothingDistance;
+static float _smoothingDistance2;
+static float _smoothingKernelConstant;
+static float _gradientSmoothingKernelConstant;
+
+float CalculateDensity(uint positionKey, inout Particle particle) {
+
+    float p = 0;
+    loopGridCell(positionKey,{
+        KeyValuePair sort = _GET(Sorted,index);
+        Particle other = _GET(Particles,sort.key);
+        float2 relativePos = other.position - particle.position;
+        float r2 = magnitudeSqr(relativePos);
+        if(r2 < _smoothingDistance2) {
+            // calculate density
+            float dis = (_smoothingDistance2 - r2);
+            float w = (dis*dis*dis);
+            p += w; // * particle.mass
+
+            float3 colorDif = other.color.rgb - particle.color.rgb;
+            float rate = r2 / _smoothingDistance2;
+            float2 relativeVel = other.velocity - particle.velocity;
+            //float velMult = magnitudeSqr(relativeVel) > 7;
+            particle.nextColor.rgb += rate * c_colorExchangeConstant * colorDif * magnitudeSqr(relativeVel) * deltaTime;
+
+            //p += 1;
+            //p+=100;
+		}
+    });
+    return p * _smoothingKernelConstant;
+}
+bool isValid(float2 val){
+    return isfinite(val.x+val.y);
+}
+float2 CalculateForceWithDensity(uint positionKey, in Particle particle) {
+
+    float2 f = float2(0,0);
+    float2 fv = float2(0,0);
+    loopGridCell(positionKey,{
+        KeyValuePair sort = _GET(Sorted,index);
+        Particle other = _GET(Particles,sort.key);
+        float2 relativePos = other.position - particle.position;
+        float r2 = magnitudeSqr(relativePos);
+        if(r2 > 0.0001 && r2 < _smoothingDistance2) {
+            // calculate density
+            float r = sqrt(r2);
+            float2 rn = relativePos / r;
+
+            float dis = (_smoothingDistance - r);
+            float w = _gradientSmoothingKernelConstant * (dis * dis);
+            float2 f1 = (particle.pressure + other.pressure) / (2 * particle.density * other.density) * w * rn; // * other.mass
+                
+            float lW = -(r2 * r) / (2 * _smoothingDistance2*_smoothingDistance) + r2 / _smoothingDistance2 + _smoothingDistance / (2 * r) - 1;
+            float2 f2 = -((other.velocity - particle.velocity) / other.density) * (lW * rn); // * other.mass 
+
+
+            f += f1;
+            fv += f2;
+		}
+    })
+    float2 r = f + fv * c_viscosityConstant;
+    // if(!isValid(r)){
+    //     return float2(0,0);
+	// }
+    return r;
+}
+
+[numthreads(c_linearBufferThreadCount,1,1)]
+void CalculateDensities(uint id : SV_DispatchThreadID) {
+
+    if(id.x >= particleCount) {
+        return;
+	}
+    // cache some variables to use later
+    _smoothingDistance = particleRadius;
+    _smoothingDistance2 = _smoothingDistance * _smoothingDistance;
+    float sm4 = _smoothingDistance2 * _smoothingDistance2;
+    float sm9 = sm4 * sm4 * _smoothingDistance;
+    _smoothingKernelConstant = 315.0 / (PI * 64.0 * sm9);
+
+
+    
+    Particle particle = _GET(Particles,id.x);
+    int2 gridPos = ToGridPos(particle.position);
+    float p = 0;
+    p += CalculateDensity(ToHash(int2(gridPos.x - 1, gridPos.y - 1)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x - 1, gridPos.y + 0)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x - 1, gridPos.y + 1)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x + 0, gridPos.y - 1)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x + 0, gridPos.y + 0)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x + 0, gridPos.y + 1)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x + 1, gridPos.y - 1)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x + 1, gridPos.y + 0)), particle);
+    p += CalculateDensity(ToHash(int2(gridPos.x + 1, gridPos.y + 1)), particle);
+    particle.density = max(p, c_fluidReferenceDensity);
+    particle.pressure = c_pressureConstant * (particle.density - c_fluidReferenceDensity);
+    _SET(Particles,id.x,particle);
+}
+[numthreads(c_linearBufferThreadCount,1,1)]
+void CalculateForces(uint3 id : SV_DispatchThreadID) {
+
+    if(id.x >= particleCount) {
+        return;
+	}
+    // cache some variables to use later
+    _smoothingDistance = particleRadius;
+    _smoothingDistance2 = _smoothingDistance * _smoothingDistance;
+    float sm4 = _smoothingDistance2 * _smoothingDistance2;
+    float sm6 = sm4 * _smoothingDistance2;
+    _gradientSmoothingKernelConstant = -45 / (PI * sm6);
+    
+    Particle particle = _GET(Particles,id.x);
+    int2 gridPos = ToGridPos(particle.position);
+
+    particle.color = particle.nextColor;
+
+    float2 force = float2(0,0);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x - 1, gridPos.y - 1)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x - 1, gridPos.y + 0)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x - 1, gridPos.y + 1)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x + 0, gridPos.y - 1)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x + 0, gridPos.y + 0)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x + 0, gridPos.y + 1)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x + 1, gridPos.y - 1)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x + 1, gridPos.y + 0)), particle);
+    force += CalculateForceWithDensity(ToHash(int2(gridPos.x + 1, gridPos.y + 1)), particle);
+
+    particle.force = force;// / particle.density;
+    _SET(Particles,id.x,particle);
+    
+    /*
+    Particle particle = Particles[id.x];
+    float force = 0;
+    Particles[id.x] = particle;
+    */
+}
+
+float2 CalculateForceBasic(uint positionKey, in Particle particle) {
+
+
+    
+    float2 f = float2(0,0);
+    //return f;
+    
+    loopGridCell(positionKey,{
+        KeyValuePair sort = _GET(Sorted,index);
+        Particle other = _GET(Particles,sort.key);
+        float2 relativePos = other.position - particle.position;
+        float r2 = magnitudeSqr(relativePos);
+        if(r2 > 0.0001 && r2 < _smoothingDistance2) {
+            
+            float r = sqrt(r2);
+            float2 relativeVel = other.velocity - particle.velocity;
+            float2 dir = relativePos / r;
+            //float2 normal = float2(-dir.x, dir.y);
+            //float norComp = dot(normal, particle.velocity);
+            //float2 dirComp = dir * dot(dir, particle.velocity);
+            //f += - 0.2 * dirComp / deltaTime;
+            //p.density+=0.01;
+            //f += (1-r2/_smoothingDistance2) * -(relativePos/r) * 105;
+            float prog = r / _smoothingDistance;
+            f += (1 - prog) * cos(prog * 2 * PI) * c_maxForce * -dir;
+            float dirComp = dot(dir, relativeVel);
+            f += dirComp * dir * 0.01 / deltaTime;
+		}
+    });
+    return f;
+}
+[numthreads(c_linearBufferThreadCount, 1, 1)]
+void CalculateForcesBasic(uint3 id : SV_DispatchThreadID) {
+    if(id.x >= particleCount) {
+        return;
+	}
+    _smoothingDistance = particleRadius;
+    _smoothingDistance2 = _smoothingDistance * _smoothingDistance;
+    
+    Particle particle =_GET(Particles,id.x);
+    particle.color = particle.nextColor;
+    int2 gridPos = ToGridPos(particle.position);
+
+    particle.color = particle.nextColor;
+
+    float2 force = float2(0,0);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x - 1, gridPos.y - 1)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x - 1, gridPos.y + 0)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x - 1, gridPos.y + 1)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x + 0, gridPos.y - 1)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x + 0, gridPos.y + 0)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x + 0, gridPos.y + 1)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x + 1, gridPos.y - 1)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x + 1, gridPos.y + 0)), particle);
+    force += CalculateForceBasic(ToHash(int2(gridPos.x + 1, gridPos.y + 1)), particle);
+
+    particle.force = force;// / particle.density;
+    _SET(Particles,id.x,particle);
+
+}
+
+[numthreads(1,1,1)]
+void DrawWallsDebug(uint3 id : SV_DispatchThreadID) {
+    for(int i = 0; i < c_wallCount; i++){
+        Line wall = Walls[i];
+        
+        ColorMap[wall.p1.xy] = float4(1,0,0,1);
+        ColorMap[lerp(wall.p1.xy, wall.p2.xy, 0.2)] = float4(1,0,0,1);
+        ColorMap[lerp(wall.p1.xy, wall.p2.xy, 0.4)] = float4(1,0,0,1);
+        ColorMap[lerp(wall.p1.xy, wall.p2.xy, 0.6)] = float4(1,0,0,1);
+        ColorMap[lerp(wall.p1.xy, wall.p2.xy, 0.8)] = float4(1,0,0,1);
+	}
+}

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba0d09d7f87f3914baf436a1cbd9c073, type: 3}
+  m_Name: PlatformOutline
+  m_EditorClassIdentifier: 
+  icon: {fileID: 0}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 0, y: 0, z: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    _connections:
+      _connections: []
+    polygonVisualizer:
+      m_AssetGUID: 
+      m_SubObjectName: 
+    zOffset: -0.02

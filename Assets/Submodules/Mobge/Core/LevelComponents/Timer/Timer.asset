@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 753e1254a82f80d47b9980ba35b45e7a, type: 3}
+  m_Name: Timer
+  m_EditorClassIdentifier: 
+  icon: {fileID: 2800000, guid: 2763832648f568f4c8b4526c8c591c27, type: 3}
+  menuPriority: 0
+  _editorValue:
+    position: {x: 3.9642081, y: 32.22503, z: 0}
+    _times:
+    - 0.9
+    startOnAwake: 0
+    _connections:
+      _connections: []

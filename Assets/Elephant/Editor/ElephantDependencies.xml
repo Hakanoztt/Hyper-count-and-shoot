@@ -1,0 +1,8 @@
+<dependencies>
+  <androidPackages>
+    <androidPackage spec="com.android.volley:volley:1.1.1">
+    </androidPackage>
+    <androidPackage spec="com.google.android.gms:play-services-ads-identifier:17.0.0@aar" />
+    <androidPackage spec="com.google.android.gms:play-services-basement:17.5.0@aar" />
+  </androidPackages>
+</dependencies>

@@ -1,0 +1,11 @@
+[submodule "Assets/Submodules/Mobge"]
+	path = Assets/Submodules/Mobge
+	url = git@github.com:MobgeGames/Mobge.git
+	branch = master
+[submodule "Assets/Submodules/HyperCasualSetup"]
+	path = Assets/Submodules/HyperCasualSetup
+	url = git@github.com:MobgeGames/HyperCasualSetup.git
+	branch = master
+[submodule "Assets/Submodules/MobgeTelemetrySupport"]
+	path = Assets/Submodules/MobgeTelemetrySupport
+	url = git@github.com:MobgeGames/MobgeTelemetrySupport.git

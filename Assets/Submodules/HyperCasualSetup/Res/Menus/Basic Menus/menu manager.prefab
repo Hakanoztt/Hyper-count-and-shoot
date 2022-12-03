@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1759334320185552625
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1759334320185552624}
+  - component: {fileID: 1759334320185552626}
+  m_Layer: 0
+  m_Name: menu manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1759334320185552624
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1759334320185552625}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 16.606686, y: 12.79742, z: 4.6301956}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1759334320185552626
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1759334320185552625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1196c7404661d0489f48377e3836a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  extraMenus:
+  - menuRes: {fileID: 3522199067068590058, guid: a7a6fe7a9f5e1f646a6a22fb5db8be9c,
+      type: 3}
+  gameHud:
+    menuRes: {fileID: 6962551497401920215, guid: dd74014b7da4cf647a8534117e82659f,
+      type: 3}
+  pauseMenu:
+    menuRes: {fileID: 473677580550046118, guid: b48f526ac0a3ccd45a43d3c586e7be41,
+      type: 3}
+  loadingMenu:
+    menuRes: {fileID: 5986418810575325114, guid: 818f939d21f6a80499f02f479b7270a0,
+      type: 3}
+  gameOverMenu:
+    menuRes: {fileID: 2767932209770738736, guid: 808d0435f261519498a91e1ea52b50b8,
+      type: 3}
+  mainMenu:
+    menuRes: {fileID: 0}
+  levelSelectMenu:
+    menuRes: {fileID: 3232481420829921941, guid: 9ba23d1e51138094f9e1a83b0653f9d0,
+      type: 3}
+  marketMenu:
+    menuRes: {fileID: 0}

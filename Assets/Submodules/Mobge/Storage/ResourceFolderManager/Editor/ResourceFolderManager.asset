@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b4b75b1ed49b214cac900503e2aeee9, type: 3}
+  m_Name: ResourceFolderManager
+  m_EditorClassIdentifier: 
+  objList:
+  - obj: {fileID: 1989555120915143803, guid: 6824df30bd2b415408021ac015b62a20, type: 3}
+    generateInstantiateFunc: 0
+  - obj: {fileID: 8254146368144062883, guid: 345d1c22c4820ef419403080621e2d04, type: 3}
+    generateInstantiateFunc: 0
+  - obj: {fileID: 8576512074107428053, guid: 398dfe04283f2fd4289110afba658119, type: 3}
+    generateInstantiateFunc: 0
+  - obj: {fileID: 11400000, guid: 34cbc3ebb683f7348bd0d0252559ffa0, type: 2}
+    generateInstantiateFunc: 0
+  - obj: {fileID: 8398495872229738094, guid: 13e346a465feb3d4c860075aed73e851, type: 3}
+    generateInstantiateFunc: 0
+  - obj: {fileID: 3881386787320339650, guid: 2b27f9658587bd945b1e561678b566a4, type: 3}
+    generateInstantiateFunc: 0
+  scriptFolder: Assets/Microns/ResourceManagement
