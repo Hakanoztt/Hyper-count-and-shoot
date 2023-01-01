@@ -141,9 +141,6 @@ namespace Mobge.CountAndShoot {
             animModule.Play(animModule.Dance);
             _player.FinishGame(true);
             finishGame = true;
-
-            //  Rigidbody body = null;
-            //    body.AddForceAtPosition()
         }
 
         [Serializable]
